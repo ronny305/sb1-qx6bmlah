@@ -301,7 +301,7 @@ const NewProductionEquipmentPage: React.FC = () => {
                   <div 
                     key={category} 
                     id={category}
-                    id={category}
+                    // id={category}
                     className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden scroll-mt-36 lg:scroll-mt-40"
                   >
                     {/* Category Header */}

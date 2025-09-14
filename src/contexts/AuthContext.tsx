@@ -1,12 +1,12 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User, Session, AuthError } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { User, Session, AuthError } from "@supabase/supabase-js";
+import { supabase } from "../lib/supabase";
 
 interface Profile {
   id: string;
   email: string;
   full_name?: string;
-  role: 'user' | 'admin';
+  role: "user" | "admin";
   created_at?: string;
   updated_at?: string;
 }
@@ -244,6 +244,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       return { error: err as AuthError };
     }
   };
+
+  useEffect(() => {
+    if (profile) {
+      localStorage.setItem("isAdmin", JSON.stringify(profile?.role === "admin"));
+    }
+  }, [profile]);
 
   // Compute isAdmin based on profile role
   const isAdmin = profile?.role === 'admin';

@@ -48,7 +48,13 @@ const AdminDashboardPage: React.FC = () => {
             </div>
             <div className="flex-1 h-0 pt-5 pb-4 overflow-y-auto">
               <div className="flex-shrink-0 flex items-center px-4">
-                <img className="h-12 w-auto" src="/onestoplogo16.png" alt="One Stop Production Rentals" />
+                 <Link to="/" className="flex items-center">
+                <img
+                  className="h-12 w-auto"
+                  src="/onestoplogo16-v2.png"
+                  alt="One Stop Production Rentals"
+                />
+                </Link>
               </div>
               <nav className="mt-5 px-2 space-y-1">
                 {navigation.map((item) => (
@@ -81,7 +87,13 @@ const AdminDashboardPage: React.FC = () => {
         <div className="flex-1 flex flex-col min-h-0 bg-white border-r border-gray-200">
           <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
             <div className="flex items-center flex-shrink-0 px-4">
-              <img className="h-12 w-auto" src="/onestoplogo16.png" alt="One Stop Production Rentals" />
+              <Link to="/" className="flex items-center">
+                <img
+                  className="h-12 w-auto"
+                  src="/onestoplogo16-v2.png"
+                  alt="One Stop Production Rentals"
+                />
+              </Link>
               <div className="ml-3">
                 <h2 className="text-lg font-semibold text-gray-900">Admin Panel</h2>
               </div>
@@ -125,7 +137,8 @@ const AdminDashboardPage: React.FC = () => {
             <div className="flex-1 px-4 flex justify-between">
               <div className="flex-1 flex items-center">
                 <h1 className="text-xl font-semibold text-gray-900">
-                  {navigation.find(item => isActive(item.href, item.exact))?.name || 'Admin Dashboard'}
+                  {navigation.find((item) => isActive(item.href, item.exact))
+                    ?.name || "Admin Dashboard"}
                 </h1>
               </div>
               <div className="ml-4 flex items-center space-x-4">
