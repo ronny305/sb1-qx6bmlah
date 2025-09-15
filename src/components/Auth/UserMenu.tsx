@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 const UserMenu: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const { user, signOut, isAdmin } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -83,7 +83,7 @@ const UserMenu: React.FC = () => {
             Profile Settings
           </Link>
           
-          {isAdmin && (
+          {localStorage.getItem("isAdmin") === 'true' && (
             <Link
               to="/admin"
               onClick={() => setIsOpen(false)}
