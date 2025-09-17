@@ -416,13 +416,6 @@ const NewHomeEcEquipmentPage: React.FC = () => {
                         <span className="text-sm text-gray-500">
                           Showing {categoryItems.length} items
                         </span>
-                        <Link
-                          to="/new-production-equipment"
-                          className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center"
-                        >
-                          Browse Production Equipment
-                          <ChevronRight size={16} className="ml-1" />
-                        </Link>
                       </div>
                     </div>
                   </div>
