@@ -432,14 +432,14 @@ const NewProductionEquipmentPage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-xl font-bold mb-2">Looking for Home Ec Equipment?</h2>
-                    <p className="text-orange-100">Browse our kitchen equipment and set decoration rentals</p>
+                    <p className="text-orange-100">Browse our kitchen equipment</p>
                   </div>
                   <Link
                     to="/home-ec-equipment"
                     className="bg-white text-orange-600 hover:bg-orange-50 px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center"
                   >
                     Browse Home Ec
-                  <h2 className="text-xl font-bold mb-2">Looking for Home Ec Equipment?</h2>
+                   <ChevronRight size={20} className="ml-2" />
                   </Link>
                 </div>
               </div>
