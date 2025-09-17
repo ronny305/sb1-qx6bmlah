@@ -422,22 +422,6 @@ const NewHomeEcEquipmentPage: React.FC = () => {
                 );
               })}
 
-              {/* Navigation to Production Equipment */}
-              <div className="bg-gradient-to-r from-red-500 to-red-600 rounded-2xl p-6 text-white">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xl font-bold mb-2">Looking for Production Equipment?</h2>
-                    <p className="text-red-100">Browse our video, audio, and lighting equipment rentals</p>
-                  </div>
-                  <Link
-                    to="/new-production-equipment"
-                    className="bg-white text-red-600 hover:bg-red-50 px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center"
-                  >
-                    Browse Production
-                    <ChevronRight size={20} className="ml-2" />
-                  </Link>
-                </div>
-              </div>
             </div>
           )}
         </div>
