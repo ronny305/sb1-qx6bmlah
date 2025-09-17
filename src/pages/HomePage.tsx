@@ -339,6 +339,12 @@ Founded in 2015 by film production veteran Guido Fodale, One Stop Production Ren
             >
               Browse Production Equipment
             </Link>
+            <Link
+              to="/home-ec-equipment"
+              className="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg font-semibold text-base transition-colors duration-200"
+            >
+              Browse Home Ec
+            </Link>
           </div>
         </div>
       </section>
