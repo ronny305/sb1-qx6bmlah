@@ -417,17 +417,10 @@ const NewProductionEquipmentPage: React.FC = () => {
                       </div>
 
                       {/* Category Navigation Links */}
-                      <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
+                      <div className="mt-4 pt-4 border-t border-gray-100">
                         <span className="text-sm text-gray-500">
                           Showing {categoryItems.length} items
                         </span>
-                        <Link
-                          to="/home-ec-equipment"
-                          className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center"
-                        >
-                          Browse Home Ec Equipment
-                          <ChevronRight size={16} className="ml-1" />
-                        </Link>
                       </div>
                     </div>
                   </div>
