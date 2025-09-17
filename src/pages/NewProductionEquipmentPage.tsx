@@ -276,7 +276,7 @@ const NewProductionEquipmentPage: React.FC = () => {
                 <ChevronRight size={16} className="ml-2" />
               </Link>
             </div>
-            <div className="flex items-center gap-4 overflow-x-auto pb-2">
+            <div className="flex flex-wrap gap-4 pb-2">
               {renderQuickNavButtons(false)}
             </div>
           </div>
