@@ -439,7 +439,7 @@ const NewProductionEquipmentPage: React.FC = () => {
                     className="bg-white text-orange-600 hover:bg-orange-50 px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center"
                   >
                     Browse Home Ec
-                    <ChevronRight size={20} className="ml-2" />
+                  <h2 className="text-xl font-bold mb-2">Looking for Home Ec Equipment?</h2>
                   </Link>
                 </div>
               </div>
