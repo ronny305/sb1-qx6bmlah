@@ -15,9 +15,9 @@ const HomePage: React.FC = () => {
       headline: "Reputable & Reliable Production Rental Supplies"
     },
     {
-      name: "James Thompson", 
-      role: "Event Coordinator",
-      content: "Satisfied With The Facilities At One Stop Production Equipment Rental. At dolore magna aliqua enim ad minim veniam quis ullamco aliquip commodo da consequat duis aute irure dolor in reprehenderit voluptate.",
+      name: "Liz Gonazalez", 
+      role: "Producer",
+      content: "One Stop is the best production rental house in all of South Florida. Responsible team, quality supplies, and great deals. I would highly recommend them to any production company. My crews and I have been working with One Stop since 2016 and will always do so.",
       rating: 5,
       image: "/api/placeholder/60/60",
       headline: "Satisfied With The Facilities At One Stop Production Equipment Rental"
