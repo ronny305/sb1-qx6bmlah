@@ -431,7 +431,7 @@ const NewProductionEquipmentPage: React.FC = () => {
               <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl p-6 text-white">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-xl font-bold mb-2">Looking for Home Economics Equipment?</h2>
+                    <h2 className="text-xl font-bold mb-2">Looking for Home Ec Equipment?</h2>
                     <p className="text-orange-100">Browse our kitchen equipment and set decoration rentals</p>
                   </div>
                   <Link
