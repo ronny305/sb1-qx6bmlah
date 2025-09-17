@@ -83,15 +83,6 @@ const HomePage: React.FC = () => {
               <p className="text-lg text-gray-300 leading-relaxed">
                 From a full-line of Production Equipment Supplies to a complete Home Economist Kitchen, we make rentals fast, simple, and reliable — with delivery, pickup, and on-set support anywhere in South Florida.
               </p>
-              <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-                <Link
-                  to="/production-equipment"
-                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold text-base transition-colors duration-200 flex items-center justify-center"
-                >
-                  Browse Production Equipment
-                  <ArrowRight className="ml-2" size={20} />
-                </Link>
-              </div>
             </div>
           </div>
         </div>
