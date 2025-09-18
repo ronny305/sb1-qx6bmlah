@@ -126,6 +126,25 @@ const QuotePanel: React.FC = () => {
       await createQuoteRequest(quoteData);
       setSubmissionStatus('success');
       setSubmissionMessage('Thank you! Your quote request has been submitted successfully. We\'ll respond within 2 business hours.');
+      
+      // Track GA4 event for quote submission from quote panel
+      if (window.gtag) {
+        window.gtag('event', 'quote_submitted', {
+          event_category: 'conversion',
+          event_label: 'Quote Panel Submission',
+          quote_source: 'quote_panel',
+          number_of_items: cartState.items.length,
+          total_quantity: cartState.totalItems,
+          customer_company: orderInfo.productionCompany || 'Not provided',
+          rental_days: (() => {
+            const start = new Date(orderInfo.primaryPickupDate);
+            const end = new Date(orderInfo.primaryReturnDate);
+            return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+          })(),
+          value: cartState.totalItems
+        });
+      }
+      
       clearCart();
       setHasBeenManuallyClosed(false); // Reset manual close state after successful submission
       // Optionally clear form fields after successful submission

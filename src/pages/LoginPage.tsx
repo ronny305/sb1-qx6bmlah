@@ -71,6 +71,16 @@ const LoginPage: React.FC = () => {
       } else {
         console.log('LoginPage: Sign in successful, navigating...');
         setSuccess('Successfully signed in!');
+        
+        // Track GA4 event for successful user sign in
+        if (window.gtag) {
+          window.gtag('event', 'login', {
+            method: 'email_password',
+            event_category: 'authentication',
+            event_label: 'User Login Success'
+          });
+        }
+        
         // Don't manually navigate here - let the useEffect handle it
       }
     } catch (err) {

@@ -20,6 +20,17 @@ const ContactPage: React.FC = () => {
     setTimeout(() => {
       setSubmitted(true);
       setIsSubmitting(false);
+      
+      // Track GA4 event for contact form submission
+      if (window.gtag) {
+        window.gtag('event', 'contact_form_submitted', {
+          event_category: 'engagement',
+          event_label: 'Contact Form Submission',
+          contact_subject: formData.subject,
+          value: 1
+        });
+      }
+      
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
     }, 2000);
   };

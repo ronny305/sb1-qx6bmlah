@@ -41,6 +41,16 @@ const SignUpPage: React.FC = () => {
       setIsLoading(false);
     } else {
       setSuccess('Account created successfully! You can now sign in.');
+      
+      // Track GA4 event for successful user sign up
+      if (window.gtag) {
+        window.gtag('event', 'sign_up', {
+          method: 'email_password',
+          event_category: 'authentication',
+          event_label: 'User Registration Success'
+        });
+      }
+      
       setTimeout(() => {
         navigate('/login');
       }, 2000);

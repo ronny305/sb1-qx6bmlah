@@ -98,6 +98,19 @@ const NewProductionEquipmentPage: React.FC = () => {
   const handleAddItem = (item: Equipment) => {
     addItem(item);
     
+    // Track GA4 event for adding production equipment to quote
+    if (window.gtag) {
+      window.gtag('event', 'add_to_quote', {
+        event_category: 'engagement',
+        event_label: 'Production Equipment Added',
+        item_name: item.name,
+        item_category: item.category,
+        item_subcategory: item.subcategory,
+        main_category: 'production',
+        value: 1
+      });
+    }
+    
     // Auto-open quote panel on desktop when item is added
     if (isDesktop) {
       setHasBeenManuallyClosed(false);
