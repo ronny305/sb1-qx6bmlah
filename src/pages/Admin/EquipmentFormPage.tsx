@@ -17,7 +17,8 @@ const EquipmentFormPage: React.FC = () => {
     description: '',
     image: '',
     specifications: '', // Will be converted to array
-    price: ''
+    pricePerUnit: '',
+    unitsPerItem: '1'
   });
 
   const [loading, setLoading] = useState(false);
@@ -68,9 +69,10 @@ const EquipmentFormPage: React.FC = () => {
           description: equipment.description,
           image: equipment.image,
           specifications: equipment.specifications?.join(', ') || '',
-          price: equipment.price?.toString() || ''
+          pricePerUnit: equipment.pricePerUnit?.toString() || '',
+          unitsPerItem: equipment.unitsPerItem?.toString() || '1'
         });
-        console.log('loadEquipment: Price converted to string for form:', equipment.price?.toString() || '');
+        console.log('loadEquipment: Price converted to string for form:', equipment.pricePerUnit?.toString() || '');
       }
     } catch (err) {
       setError('Failed to load equipment data.');
@@ -98,7 +100,8 @@ const EquipmentFormPage: React.FC = () => {
         specifications: formData.specifications.trim() 
           ? formData.specifications.split(',').map(s => s.trim()).filter(s => s)
           : [],
-        price: formData.price.trim() ? parseFloat(formData.price) : null
+        pricePerUnit: formData.pricePerUnit.trim() ? parseFloat(formData.pricePerUnit) : null,
+        unitsPerItem: formData.unitsPerItem.trim() ? parseInt(formData.unitsPerItem) : 1
       };
 
       console.log('EquipmentFormPage: Prepared equipment data:', equipmentData);
