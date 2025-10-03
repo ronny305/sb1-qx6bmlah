@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Building, Calendar, MapPin, FileText, Package, Phone, Mail, DollarSign, Save, Send, AlertCircle, CheckCircle, Plus, Minus, Trash2, Edit3, Search, Download } from 'lucide-react';
+import { ArrowLeft, User, Building, Calendar, MapPin, FileText, Package, Phone, Mail, DollarSign, Save, Send, AlertCircle, CheckCircle, Plus, Minus, Trash2, CreditCard as Edit3, Search, Download } from 'lucide-react';
 import { fetchQuoteRequestById, updateQuoteRequestStatus, updateQuoteRequest, resendQuoteEmail, generateQuotePdf, QuoteRequest } from '../../lib/quoteRequests';
 import { fetchAllEquipment } from '../../lib/equipment';
 import { Equipment } from '../../types';
