@@ -4,6 +4,7 @@ import { ArrowLeft, User, Building, Calendar, MapPin, FileText, Package, Phone, 
 import { fetchQuoteRequestById, updateQuoteRequestStatus, updateQuoteRequest, resendQuoteEmail, generateQuotePdf, QuoteRequest } from '../../lib/quoteRequests';
 import { fetchAllEquipment } from '../../lib/equipment';
 import { Equipment } from '../../types';
+import { formatDateWithoutTimezone } from '../../lib/dateUtils';
 
 const QuoteRequestDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -637,7 +638,7 @@ const QuoteRequestDetailPage: React.FC = () => {
                   <div className="flex items-center text-gray-900">
                     <Calendar className="w-4 h-4 text-gray-400 mr-2" />
                     <span>
-                      {new Date(request.start_date).toLocaleDateString()} - {new Date(request.end_date).toLocaleDateString()} ({totals.rentalDays} days)
+                      {formatDateWithoutTimezone(request.start_date)} - {formatDateWithoutTimezone(request.end_date)} ({totals.rentalDays} days)
                     </span>
                   </div>
                 )}

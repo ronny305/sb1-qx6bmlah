@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatDateWithoutTimezone } from '../lib/dateUtils';
 
 const QuoteEmailPreviewPage: React.FC = () => {
   // Mock Data for Preview
@@ -182,7 +183,7 @@ const QuoteEmailPreviewPage: React.FC = () => {
             <p><strong>Customer:</strong> ${mockQuoteRequest.customer_name}</p>
             ${mockQuoteRequest.company ? `<p><strong>Company:</strong> ${mockQuoteRequest.company}</p>` : ''}
             <p><strong>Job Name:</strong> ${mockQuoteRequest.job_name}</p>
-            <p><strong>Rental Period:</strong> ${new Date(mockQuoteRequest.start_date).toLocaleDateString()} - ${new Date(mockQuoteRequest.end_date).toLocaleDateString()} (${mockRentalDays} days)</p>
+            <p><strong>Rental Period:</strong> ${formatDateWithoutTimezone(mockQuoteRequest.start_date)} - ${formatDateWithoutTimezone(mockQuoteRequest.end_date)} (${mockRentalDays} days)</p>
             <p><strong>Shooting Locations:</strong> ${mockQuoteRequest.shooting_locations}</p>
         </div>
 

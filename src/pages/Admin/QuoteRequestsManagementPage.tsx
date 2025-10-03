@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, Calendar, User, Building, FileText, AlertCircle, CheckCircle, Clock, XCircle, Filter, Search } from 'lucide-react';
 import { fetchAllQuoteRequests, updateQuoteRequestStatus, deleteQuoteRequest, QuoteRequest } from '../../lib/quoteRequests';
+import { formatDateWithoutTimezone } from '../../lib/dateUtils';
 
 const QuoteRequestsManagementPage: React.FC = () => {
   const [quoteRequests, setQuoteRequests] = useState<QuoteRequest[]>([]);
@@ -272,8 +273,8 @@ const QuoteRequestsManagementPage: React.FC = () => {
                         <div className="text-sm text-gray-900 flex items-center">
                           <Calendar className="w-4 h-4 mr-1" />
                           <div>
-                            <div>{new Date(request.start_date).toLocaleDateString()}</div>
-                            <div className="text-xs text-gray-500">to {new Date(request.end_date).toLocaleDateString()}</div>
+                            <div>{formatDateWithoutTimezone(request.start_date)}</div>
+                            <div className="text-xs text-gray-500">to {formatDateWithoutTimezone(request.end_date)}</div>
                           </div>
                         </div>
                       </td>

@@ -6,6 +6,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Helper function to format dates without timezone conversion
+function formatDateWithoutTimezone(dateString: string): string {
+  const [year, month, day] = dateString.split('T')[0].split('-');
+  const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+  return date.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
+}
+
 interface QuoteRequestItem {
   equipment: {
     id: number;
@@ -276,7 +283,7 @@ serve(async (req) => {
             <p><strong>Customer:</strong> ${quoteRequest.customer_name}</p>
             ${quoteRequest.company ? `<p><strong>Company:</strong> ${quoteRequest.company}</p>` : ''}
             <p><strong>Job Name:</strong> ${quoteRequest.job_name}</p>
-            <p><strong>Rental Period:</strong> ${new Date(quoteRequest.start_date).toLocaleDateString()} - ${new Date(quoteRequest.end_date).toLocaleDateString()} (${rentalDays} days)</p>
+            <p><strong>Rental Period:</strong> ${formatDateWithoutTimezone(quoteRequest.start_date)} - ${formatDateWithoutTimezone(quoteRequest.end_date)} (${rentalDays} days)</p>
             <p><strong>Shooting Locations:</strong> ${quoteRequest.shooting_locations}</p>
         </div>
 
