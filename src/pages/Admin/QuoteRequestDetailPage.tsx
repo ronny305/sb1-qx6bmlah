@@ -24,6 +24,9 @@ const QuoteRequestDetailPage: React.FC = () => {
   const [searchNewItemTerm, setSearchNewItemTerm] = useState('');
   const [selectedNewItem, setSelectedNewItem] = useState<Equipment | null>(null);
   const [newItemQuantity, setNewItemQuantity] = useState<number>(1);
+  const [isEditingDates, setIsEditingDates] = useState(false);
+  const [editedStartDate, setEditedStartDate] = useState<string>('');
+  const [editedEndDate, setEditedEndDate] = useState<string>('');
   
   // UI state
   const [showAddNewSection, setShowAddNewSection] = useState(false);
@@ -34,6 +37,7 @@ const QuoteRequestDetailPage: React.FC = () => {
   const [isAddingNewItem, setIsAddingNewItem] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isSavingDates, setIsSavingDates] = useState(false);
   
   // Messages
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
@@ -67,6 +71,8 @@ const QuoteRequestDetailPage: React.FC = () => {
         setRequest(data);
         setDiscount(data.discount_amount || 0);
         setEditableItems(Array.isArray(data.items) ? [...data.items] : []);
+        setEditedStartDate(data.start_date);
+        setEditedEndDate(data.end_date);
       }
     } catch (err) {
       setError('Failed to load quote request details.');
@@ -326,6 +332,56 @@ const QuoteRequestDetailPage: React.FC = () => {
     }
   };
 
+  const handleSaveDates = async () => {
+    if (!request?.id) return;
+
+    if (!editedStartDate || !editedEndDate) {
+      setSaveError('Both start and end dates are required.');
+      setTimeout(() => setSaveError(null), 5000);
+      return;
+    }
+
+    const startDate = new Date(editedStartDate);
+    const endDate = new Date(editedEndDate);
+
+    if (endDate <= startDate) {
+      setSaveError('End date must be after start date.');
+      setTimeout(() => setSaveError(null), 5000);
+      return;
+    }
+
+    setIsSavingDates(true);
+    setSaveSuccess(null);
+    setSaveError(null);
+
+    try {
+      const updatedRequest = await updateQuoteRequest(request.id, {
+        start_date: editedStartDate,
+        end_date: editedEndDate
+      });
+      setRequest(updatedRequest);
+      setEditedStartDate(updatedRequest.start_date);
+      setEditedEndDate(updatedRequest.end_date);
+      setIsEditingDates(false);
+      setSaveSuccess('Rental period updated successfully!');
+      setTimeout(() => setSaveSuccess(null), 3000);
+    } catch (err) {
+      console.error('Error saving rental period:', err);
+      setSaveError('Failed to save rental period. Please try again.');
+      setTimeout(() => setSaveError(null), 5000);
+    } finally {
+      setIsSavingDates(false);
+    }
+  };
+
+  const handleCancelDatesEdit = () => {
+    if (request) {
+      setEditedStartDate(request.start_date);
+      setEditedEndDate(request.end_date);
+    }
+    setIsEditingDates(false);
+  };
+
   // Calculate totals
   const calculateTotals = () => {
     if (!request) return { grandTotal: 0, finalTotal: 0, taxAmount: 0, rentalDays: 1 };
@@ -515,13 +571,76 @@ const QuoteRequestDetailPage: React.FC = () => {
               )}
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Rental Period</label>
-                <div className="flex items-center text-gray-900">
-                  <Calendar className="w-4 h-4 text-gray-400 mr-2" />
-                  <span>
-                    {new Date(request.start_date).toLocaleDateString()} - {new Date(request.end_date).toLocaleDateString()} ({totals.rentalDays} days)
-                  </span>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-gray-700">Rental Period</label>
+                  {!isEditingDates && (
+                    <button
+                      onClick={() => setIsEditingDates(true)}
+                      className="inline-flex items-center text-sm text-blue-600 hover:text-blue-700"
+                    >
+                      <Edit3 className="w-3 h-3 mr-1" />
+                      Edit
+                    </button>
+                  )}
                 </div>
+
+                {isEditingDates ? (
+                  <div className="space-y-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">Start Date</label>
+                      <input
+                        type="date"
+                        value={editedStartDate}
+                        onChange={(e) => setEditedStartDate(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        disabled={isSavingDates}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 mb-1">End Date</label>
+                      <input
+                        type="date"
+                        value={editedEndDate}
+                        onChange={(e) => setEditedEndDate(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        disabled={isSavingDates}
+                      />
+                    </div>
+                    <div className="flex items-center justify-end space-x-2 pt-2">
+                      <button
+                        onClick={handleCancelDatesEdit}
+                        disabled={isSavingDates}
+                        className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSaveDates}
+                        disabled={isSavingDates}
+                        className="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+                      >
+                        {isSavingDates ? (
+                          <>
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white mr-1"></div>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="w-3 h-3 mr-1" />
+                            Save
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center text-gray-900">
+                    <Calendar className="w-4 h-4 text-gray-400 mr-2" />
+                    <span>
+                      {new Date(request.start_date).toLocaleDateString()} - {new Date(request.end_date).toLocaleDateString()} ({totals.rentalDays} days)
+                    </span>
+                  </div>
+                )}
               </div>
               
               <div>
