@@ -57,7 +57,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const timeoutPromise = new Promise((_, reject) => {
         setTimeout(
           () => reject(new Error('Profile query timeout after 60 seconds')),
-          60000
+          5000
         );
       });
 
