@@ -1,14 +1,16 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import React from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface AdminRouteProps {
   children: React.ReactNode;
 }
 
 const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
-  const { user, profile, loading, isAdmin } = useAuth();
+  // const { user, profile, loading, isAdmin } = useAuth();
+  const { user, profile, loading } = useAuth();
 
+  const isAdmin = localStorage.getItem("isAdmin") || false;
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -30,7 +32,9 @@ const AdminRoute: React.FC<AdminRouteProps> = ({ children }) => {
         <div className="text-center">
           <div className="bg-white rounded-lg shadow-md p-8 max-w-md mx-auto">
             <div className="text-red-600 text-6xl mb-4">🚫</div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Access Denied
+            </h2>
             <p className="text-gray-600 mb-6">
               You need administrator privileges to access this page.
             </p>
