@@ -57,9 +57,15 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const resendApiKey = Deno.env.get('RESEND_API_KEY')!
     const docRaptorApiKey = Deno.env.get('DOCRAPTOR_API_KEY')!
-    const adminEmail = Deno.env.get('ADMIN_EMAIL') || 'ONESTOPSUPPLIESMIAMI@gmail.com'
+    const adminEmailsString = Deno.env.get('ADMIN_EMAIL') || 'ONESTOPSUPPLIESMIAMI@gmail.com,caymana@gmail.com,fodaleinc@mac.com'
 
-    if (!supabaseUrl || !supabaseServiceKey || !resendApiKey || !docRaptorApiKey || !adminEmail) {
+    // Parse admin emails - support comma-separated list
+    const adminEmails = adminEmailsString
+      .split(',')
+      .map(email => email.trim())
+      .filter(email => email.length > 0)
+
+    if (!supabaseUrl || !supabaseServiceKey || !resendApiKey || !docRaptorApiKey || adminEmails.length === 0) {
       throw new Error('Missing required environment variables')
     }
 
@@ -773,12 +779,12 @@ serve(async (req) => {
     // Send admin notification email
     const adminEmailData = {
       from: 'One Stop Production Rentals <noreply@onestopproductionrentals.com>',
-      to: [adminEmail],
+      to: adminEmails,
       subject: `🚨 NEW QUOTE REQUEST - ${quoteRequest.customer_name} - ${finalTotal.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`,
       html: adminEmailHtml,
     }
 
-    console.log('📧 Sending admin notification to:', adminEmail)
+    console.log('📧 Sending admin notification to:', adminEmails.join(', '))
     
     const adminEmailResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
