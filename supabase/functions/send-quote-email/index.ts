@@ -731,7 +731,7 @@ serve(async (req) => {
                 <li><strong>Contact customer</strong> within 2 business hours</li>
                 <li><strong>Update quote status</strong> in the admin dashboard</li>
             </ol>
-            <p><strong>Admin Dashboard:</strong> <a href="https://onestopproductionrentals.com/admin/quotes/${quoteRequest.id}">View Quote Details</a></p>
+            <p><strong>Admin Dashboard:</strong> <a href="https://onestopproductionrentals.com/admin/quote-requests/${quoteRequest.id}">View Quote Details</a></p>
         </div>
     </div>
 </body>
