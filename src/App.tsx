@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { CartProvider } from './contexts/CartContext';
 import { QuotePanelProvider } from './contexts/QuotePanelContext';
@@ -36,7 +36,19 @@ import QuotePanel from './components/QuotePanel';
 
 const AppContent: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const isAdminRoute = location.pathname.startsWith('/admin');
+
+  React.useEffect(() => {
+    const hashParams = new URLSearchParams(location.hash.substring(1));
+    const type = hashParams.get('type');
+    const accessToken = hashParams.get('access_token');
+
+    if (type === 'recovery' && accessToken && location.pathname !== '/reset-password') {
+      console.log('App: Detected recovery token on non-reset-password page, redirecting');
+      navigate('/reset-password' + location.hash, { replace: true });
+    }
+  }, [location.hash, location.pathname, navigate]);
 
   return (
     <div className="min-h-screen flex flex-col">

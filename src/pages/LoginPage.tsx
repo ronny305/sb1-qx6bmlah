@@ -18,6 +18,18 @@ const LoginPage: React.FC = () => {
 
   const from = location.state?.from?.pathname || '/';
 
+  // Check for password recovery token and redirect to reset-password page
+  useEffect(() => {
+    const hashParams = new URLSearchParams(location.hash.substring(1));
+    const type = hashParams.get('type');
+    const accessToken = hashParams.get('access_token');
+
+    if (type === 'recovery' && accessToken) {
+      console.log('LoginPage: Detected recovery token, redirecting to reset-password page');
+      navigate('/reset-password' + location.hash, { replace: true });
+    }
+  }, [location.hash, navigate]);
+
   // Handle redirection after successful authentication
   useEffect(() => {
     console.log('LoginPage useEffect: user:', user, 'loading:', loading, 'profile:', profile, 'isAdmin:', isAdmin, 'from:', from);
@@ -28,7 +40,7 @@ const LoginPage: React.FC = () => {
 
       const redirectPath = isAdmin ? '/admin' : from;
       console.log('LoginPage useEffect: User is admin:', isAdmin, 'Calculated redirect path:', redirectPath);
-      
+
       navigate(redirectPath, { replace: true });
     }
   }, [user, loading, profile, isAdmin, navigate, from]);
