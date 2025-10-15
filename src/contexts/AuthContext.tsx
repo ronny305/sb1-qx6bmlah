@@ -26,6 +26,8 @@ interface AuthContextType {
     password: string
   ) => Promise<{ error: AuthError | null; data?: any }>;
   signOut: () => Promise<{ error: AuthError | null }>;
+  resetPassword: (email: string) => Promise<{ error: AuthError | null }>;
+  updatePassword: (newPassword: string) => Promise<{ error: AuthError | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -243,6 +245,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const resetPassword = async (email: string) => {
+    console.log('AuthContext: Password reset attempt for:', email);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      console.log('AuthContext: Password reset result, error:', error);
+      return { error };
+    } catch (err) {
+      console.error('AuthContext: Password reset exception:', err);
+      return { error: err as AuthError };
+    }
+  };
+
+  const updatePassword = async (newPassword: string) => {
+    console.log('AuthContext: Update password attempt');
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      console.log('AuthContext: Update password result, error:', error);
+      return { error };
+    } catch (err) {
+      console.error('AuthContext: Update password exception:', err);
+      return { error: err as AuthError };
+    }
+  };
+
   useEffect(() => {
     if (profile) {
       localStorage.setItem("isAdmin", JSON.stringify(profile?.role === "admin"));
@@ -267,6 +301,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     signIn,
     signUp,
     signOut,
+    resetPassword,
+    updatePassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
