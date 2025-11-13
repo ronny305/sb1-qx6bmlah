@@ -28,6 +28,7 @@ import EquipmentManagementPage from './pages/Admin/EquipmentManagementPage';
 import EquipmentFormPage from './pages/Admin/EquipmentFormPage';
 import QuoteRequestsManagementPage from './pages/Admin/QuoteRequestsManagementPage';
 import QuoteRequestDetailPage from './pages/Admin/QuoteRequestDetailPage';
+import QuoteAuditLogPage from './pages/Admin/QuoteAuditLogPage';
 import ProjectManagementPage from './pages/Admin/ProjectManagementPage';
 import ProjectFormPage from './pages/Admin/ProjectFormPage';
 import ScrollToTop from './components/ScrollToTop';
@@ -80,6 +81,7 @@ const AppContent: React.FC = () => {
             <Route path="equipment/:id/edit" element={<EquipmentFormPage />} />
             <Route path="quote-requests" element={<QuoteRequestsManagementPage />} />
             <Route path="quote-requests/:id" element={<QuoteRequestDetailPage />} />
+            <Route path="quote-audit-log" element={<QuoteAuditLogPage />} />
           </Route>
         </Routes>
       </main>
