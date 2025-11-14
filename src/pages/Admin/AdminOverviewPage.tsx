@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BarChart, Users, Package, FileText, TrendingUp, Calendar } from 'lucide-react';
 import { fetchEquipmentCount, fetchRecentEquipment } from '../../lib/equipment';
 import { fetchPendingQuoteRequestsCount, fetchTotalQuoteRequestsCount, fetchRecentQuoteRequests } from '../../lib/quoteRequests';
 import { fetchProjectsCount, fetchRecentProjects } from '../../lib/projects';
 
 const AdminOverviewPage: React.FC = () => {
+  const navigate = useNavigate();
   const [counts, setCounts] = useState({
     equipment: 0,
     projects: 0,
@@ -239,7 +241,10 @@ const AdminOverviewPage: React.FC = () => {
       <div className="bg-white rounded-lg shadow p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="bg-blue-50 hover:bg-blue-100 text-blue-700 p-4 rounded-lg text-left transition-colors">
+          <button
+            onClick={() => navigate('/admin/equipment/new')}
+            className="bg-blue-50 hover:bg-blue-100 text-blue-700 p-4 rounded-lg text-left transition-colors"
+          >
             <Package className="w-8 h-8 mb-2" />
             <h3 className="font-semibold">Add Equipment</h3>
             <p className="text-sm text-blue-600">Add new rental equipment</p>
