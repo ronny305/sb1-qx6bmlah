@@ -23,8 +23,13 @@ export const fetchProjectsCount = async (): Promise<number> => {
     .select('*', { count: 'exact', head: true });
 
   if (error) {
-    console.error('fetchProjectsCount: Supabase error:', error);
-    throw new Error('Failed to fetch projects count');
+    console.error('fetchProjectsCount: Supabase error:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code
+    });
+    throw new Error(`Failed to fetch projects count: ${error.message}`);
   }
 
   console.log('fetchProjectsCount: Projects count:', count);
@@ -41,8 +46,13 @@ export const fetchRecentProjects = async (limit = 5): Promise<any[]> => {
     .limit(limit);
 
   if (error) {
-    console.error('fetchRecentProjects: Supabase error:', error);
-    throw new Error('Failed to fetch recent projects');
+    console.error('fetchRecentProjects: Supabase error:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code
+    });
+    throw new Error(`Failed to fetch recent projects: ${error.message}`);
   }
 
   console.log('fetchRecentProjects: Recent projects data received:', data);

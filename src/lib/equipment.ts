@@ -196,8 +196,13 @@ export const fetchEquipmentCount = async (): Promise<number> => {
     .select('*', { count: 'exact', head: true });
 
   if (error) {
-    console.error('fetchEquipmentCount: Supabase error:', error);
-    throw new Error('Failed to fetch equipment count');
+    console.error('fetchEquipmentCount: Supabase error:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code
+    });
+    throw new Error(`Failed to fetch equipment count: ${error.message}`);
   }
 
   console.log('fetchEquipmentCount: Equipment count:', count);

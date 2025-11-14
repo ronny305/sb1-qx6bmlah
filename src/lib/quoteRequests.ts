@@ -401,8 +401,13 @@ export const fetchPendingQuoteRequestsCount = async (): Promise<number> => {
     .eq('is_deleted', false);
 
   if (error) {
-    console.error('fetchPendingQuoteRequestsCount: Supabase error:', error);
-    throw new Error('Failed to fetch pending quote requests count');
+    console.error('fetchPendingQuoteRequestsCount: Supabase error:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code
+    });
+    throw new Error(`Failed to fetch pending quote requests count: ${error.message}`);
   }
 
   console.log('fetchPendingQuoteRequestsCount: Pending quote requests count:', count);
@@ -418,8 +423,13 @@ export const fetchTotalQuoteRequestsCount = async (): Promise<number> => {
     .eq('is_deleted', false);
 
   if (error) {
-    console.error('fetchTotalQuoteRequestsCount: Supabase error:', error);
-    throw new Error('Failed to fetch total quote requests count');
+    console.error('fetchTotalQuoteRequestsCount: Supabase error:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code
+    });
+    throw new Error(`Failed to fetch total quote requests count: ${error.message}`);
   }
 
   console.log('fetchTotalQuoteRequestsCount: Total quote requests count:', count);
@@ -454,8 +464,13 @@ export const fetchRecentQuoteRequests = async (limit = 5): Promise<any[]> => {
     .limit(limit);
 
   if (error) {
-    console.error('fetchRecentQuoteRequests: Supabase error:', error);
-    throw new Error('Failed to fetch recent quote requests');
+    console.error('fetchRecentQuoteRequests: Supabase error:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code
+    });
+    throw new Error(`Failed to fetch recent quote requests: ${error.message}`);
   }
 
   console.log('fetchRecentQuoteRequests: Recent quote requests data received:', data);
