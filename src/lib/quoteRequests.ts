@@ -57,7 +57,8 @@ export const createQuoteRequest = async (quoteData: Omit<QuoteRequest, 'id' | 's
       special_requests: quoteData.special_requests || null,
       items: quoteData.items,
       status: 'pending',
-      is_tax_exempt: quoteData.is_tax_exempt || false
+      is_tax_exempt: quoteData.is_tax_exempt || false,
+      is_deleted: false
     }])
     .select()
     .single();
