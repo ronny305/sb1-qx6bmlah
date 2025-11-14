@@ -19,30 +19,59 @@ const AdminOverviewPage: React.FC = () => {
 
   useEffect(() => {
     const loadCounts = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Fetch all counts in parallel
-        const [equipmentCount, projectsCount, pendingQuotesCount, totalQuotesCount] = await Promise.all([
-          fetchEquipmentCount(),
-          fetchProjectsCount(),
-          fetchPendingQuoteRequestsCount(),
-          fetchTotalQuoteRequestsCount()
-        ]);
+      setLoading(true);
+      setError(null);
 
-        setCounts({
-          equipment: equipmentCount,
-          projects: projectsCount,
-          pendingQuotes: pendingQuotesCount,
-          totalQuotes: totalQuotesCount
-        });
-      } catch (err) {
-        console.error('Error loading admin overview counts:', err);
-        setError('Failed to load dashboard data. Please try again.');
-      } finally {
-        setLoading(false);
-      }
+      // Fetch each count independently with individual error handling
+      const loadEquipmentCount = async () => {
+        try {
+          const count = await fetchEquipmentCount();
+          setCounts(prev => ({ ...prev, equipment: count }));
+        } catch (err) {
+          console.error('Error loading equipment count:', err);
+          setError('Failed to load some dashboard data. Some statistics may be unavailable.');
+        }
+      };
+
+      const loadProjectsCount = async () => {
+        try {
+          const count = await fetchProjectsCount();
+          setCounts(prev => ({ ...prev, projects: count }));
+        } catch (err) {
+          console.error('Error loading projects count:', err);
+          setError('Failed to load some dashboard data. Some statistics may be unavailable.');
+        }
+      };
+
+      const loadPendingQuotesCount = async () => {
+        try {
+          const count = await fetchPendingQuoteRequestsCount();
+          setCounts(prev => ({ ...prev, pendingQuotes: count }));
+        } catch (err) {
+          console.error('Error loading pending quotes count:', err);
+          setError('Failed to load some dashboard data. Some statistics may be unavailable.');
+        }
+      };
+
+      const loadTotalQuotesCount = async () => {
+        try {
+          const count = await fetchTotalQuoteRequestsCount();
+          setCounts(prev => ({ ...prev, totalQuotes: count }));
+        } catch (err) {
+          console.error('Error loading total quotes count:', err);
+          setError('Failed to load some dashboard data. Some statistics may be unavailable.');
+        }
+      };
+
+      // Load all counts in parallel but with independent error handling
+      await Promise.allSettled([
+        loadEquipmentCount(),
+        loadProjectsCount(),
+        loadPendingQuotesCount(),
+        loadTotalQuotesCount()
+      ]);
+
+      setLoading(false);
     };
 
     loadCounts();
@@ -50,21 +79,21 @@ const AdminOverviewPage: React.FC = () => {
   }, []);
 
   const loadRecentActivities = async () => {
-    try {
-      setActivitiesLoading(true);
-      setActivitiesError(null);
-      
-      // Fetch recent data from all sources
-      const [recentEquipment, recentProjects, recentQuoteRequests] = await Promise.all([
-        fetchRecentEquipment(3),
-        fetchRecentProjects(3),
-        fetchRecentQuoteRequests(3)
-      ]);
+    setActivitiesLoading(true);
+    setActivitiesError(null);
 
-      // Combine and format activities
-      const activities = [];
+    // Fetch recent data from all sources with independent error handling
+    const results = await Promise.allSettled([
+      fetchRecentEquipment(3),
+      fetchRecentProjects(3),
+      fetchRecentQuoteRequests(3)
+    ]);
 
-      // Add equipment activities
+    const activities = [];
+
+    // Add equipment activities (if successful)
+    if (results[0].status === 'fulfilled') {
+      const recentEquipment = results[0].value;
       recentEquipment.forEach(item => {
         const isNew = !item.updated_at || item.updated_at === item.created_at;
         activities.push({
@@ -75,8 +104,13 @@ const AdminOverviewPage: React.FC = () => {
           color: isNew ? 'bg-blue-500' : 'bg-blue-500'
         });
       });
+    } else {
+      console.error('Error loading recent equipment:', results[0].reason);
+    }
 
-      // Add project activities
+    // Add project activities (if successful)
+    if (results[1].status === 'fulfilled') {
+      const recentProjects = results[1].value;
       recentProjects.forEach(project => {
         const isNew = !project.updated_at || project.updated_at === project.created_at;
         activities.push({
@@ -87,8 +121,13 @@ const AdminOverviewPage: React.FC = () => {
           color: isNew ? 'bg-purple-500' : 'bg-purple-500'
         });
       });
+    } else {
+      console.error('Error loading recent projects:', results[1].reason);
+    }
 
-      // Add quote request activities
+    // Add quote request activities (if successful)
+    if (results[2].status === 'fulfilled') {
+      const recentQuoteRequests = results[2].value;
       recentQuoteRequests.forEach(quote => {
         activities.push({
           id: `quote-${quote.id}`,
@@ -98,16 +137,21 @@ const AdminOverviewPage: React.FC = () => {
           color: 'bg-green-500'
         });
       });
-
-      // Sort by timestamp and take the most recent 5
-      const sortedActivities = activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5);
-      setRecentActivities(sortedActivities);
-    } catch (err) {
-      console.error('Error loading recent activities:', err);
-      setActivitiesError('Failed to load recent activities.');
-    } finally {
-      setActivitiesLoading(false);
+    } else {
+      console.error('Error loading recent quote requests:', results[2].reason);
     }
+
+    // Check if all requests failed
+    if (results.every(result => result.status === 'rejected')) {
+      setActivitiesError('Failed to load recent activities from all sources.');
+    } else if (results.some(result => result.status === 'rejected')) {
+      setActivitiesError('Some recent activities could not be loaded.');
+    }
+
+    // Sort by timestamp and take the most recent 5
+    const sortedActivities = activities.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5);
+    setRecentActivities(sortedActivities);
+    setActivitiesLoading(false);
   };
 
   const formatTimestamp = (timestamp: string) => {
