@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Building, Calendar, MapPin, FileText, Package, Phone, Mail, DollarSign, Save, Send, AlertCircle, CheckCircle, Plus, Minus, Trash2, CreditCard as Edit3, Search, Download } from 'lucide-react';
-import { fetchQuoteRequestById, updateQuoteRequestStatus, updateQuoteRequest, resendQuoteEmail, generateQuotePdf, QuoteRequest } from '../../lib/quoteRequests';
+import { ArrowLeft, User, Building, Calendar, MapPin, FileText, Package, Phone, Mail, DollarSign, Save, Send, AlertCircle, CheckCircle, Plus, Minus, Trash2, CreditCard as Edit3, Search, Download, RotateCcw, History } from 'lucide-react';
+import { fetchQuoteRequestById, updateQuoteRequestStatus, updateQuoteRequest, resendQuoteEmail, generateQuotePdf, restoreQuoteRequest, fetchAuditLogs, QuoteRequest, AuditLogEntry } from '../../lib/quoteRequests';
+import { useAuth } from '../../contexts/AuthContext';
 import { fetchAllEquipment } from '../../lib/equipment';
 import { Equipment } from '../../types';
 import { formatDateWithoutTimezone } from '../../lib/dateUtils';
@@ -9,12 +10,16 @@ import { formatDateWithoutTimezone } from '../../lib/dateUtils';
 const QuoteRequestDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { profile } = useAuth();
 
   // Main state
   const [request, setRequest] = useState<QuoteRequest | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
+  const [showAuditLogs, setShowAuditLogs] = useState(false);
+  const [restoring, setRestoring] = useState(false);
 
   // Equipment and items state
   const [editableItems, setEditableItems] = useState<any[]>([]);
@@ -54,6 +59,7 @@ const QuoteRequestDetailPage: React.FC = () => {
     if (id) {
       loadQuoteRequest(id);
       loadAvailableEquipment();
+      loadAuditLogs(id);
     } else {
       console.error('QuoteRequestDetailPage: No ID found in URL parameters.');
       setError('No quote request ID provided.');
@@ -90,6 +96,40 @@ const QuoteRequestDetailPage: React.FC = () => {
       setAvailableEquipment(equipment);
     } catch (err) {
       console.error('Error loading available equipment:', err);
+    }
+  };
+
+  const loadAuditLogs = async (quoteId: string) => {
+    try {
+      const logs = await fetchAuditLogs(quoteId);
+      setAuditLogs(logs);
+    } catch (err) {
+      console.error('Error loading audit logs:', err);
+    }
+  };
+
+  const handleRestore = async () => {
+    if (!id || !profile?.id) {
+      alert('Cannot restore: missing ID or user not authenticated');
+      return;
+    }
+
+    const confirmRestore = window.confirm('Are you sure you want to restore this quote request?');
+    if (!confirmRestore) return;
+
+    try {
+      setRestoring(true);
+      await restoreQuoteRequest(id, profile.id);
+      await loadQuoteRequest(id);
+      await loadAuditLogs(id);
+      setSaveSuccess('Quote request restored successfully!');
+      setTimeout(() => setSaveSuccess(null), 3000);
+    } catch (err) {
+      console.error('Error restoring quote request:', err);
+      setSaveError('Failed to restore quote request. Please try again.');
+      setTimeout(() => setSaveError(null), 5000);
+    } finally {
+      setRestoring(false);
     }
   };
 
@@ -464,9 +504,45 @@ const QuoteRequestDetailPage: React.FC = () => {
     );
   }
 
+  const isDeleted = request?.is_deleted || false;
+
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       <div className="max-w-4xl mx-auto">
+        {isDeleted && (
+          <div className="mb-6 bg-red-100 border-l-4 border-red-600 p-4 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <AlertCircle className="text-red-600 mr-3" size={24} />
+                <div>
+                  <h3 className="text-red-900 font-semibold">This quote has been deleted</h3>
+                  <p className="text-red-800 text-sm mt-1">
+                    Deleted on {request.deleted_at ? new Date(request.deleted_at).toLocaleString() : 'N/A'}
+                    {request.deletion_reason && ` - Reason: ${request.deletion_reason}`}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={handleRestore}
+                disabled={restoring}
+                className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
+              >
+                {restoring ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Restoring...
+                  </>
+                ) : (
+                  <>
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Restore Quote
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-6">
           <div className="flex justify-between items-center">
@@ -476,24 +552,26 @@ const QuoteRequestDetailPage: React.FC = () => {
                 Submitted on {new Date(request.created_at || new Date()).toLocaleDateString()}
               </p>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${getStatusColor(request.status)}`}>
                 {request.status.replace('_', ' ').charAt(0).toUpperCase() + request.status.slice(1)}
               </span>
-              
-              <select
-                value={request.status}
-                onChange={(e) => handleStatusUpdate(e.target.value as QuoteRequest['status'])}
-                disabled={updating}
-                className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent"
-              >
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="in_progress">In Progress</option>
-                <option value="completed">Completed</option>
-                <option value="rejected">Rejected</option>
-              </select>
+
+              {!isDeleted && (
+                <select
+                  value={request.status}
+                  onChange={(e) => handleStatusUpdate(e.target.value as QuoteRequest['status'])}
+                  disabled={updating}
+                  className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                >
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+              )}
             </div>
           </div>
         </div>
@@ -663,19 +741,20 @@ const QuoteRequestDetailPage: React.FC = () => {
         </div>
 
         {/* Add New Equipment Section */}
-        <div className="mt-8 bg-white rounded-lg shadow-sm border p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold text-gray-900 flex items-center">
-              <Plus className="mr-3 text-green-600" size={24} />
-              Add Equipment to Quote
-            </h2>
-            <button
-              onClick={() => setShowAddNewSection(!showAddNewSection)}
-              className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-            >
-              {showAddNewSection ? 'Cancel' : 'Add Equipment'}
-            </button>
-          </div>
+        {!isDeleted && (
+          <div className="mt-8 bg-white rounded-lg shadow-sm border p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-gray-900 flex items-center">
+                <Plus className="mr-3 text-green-600" size={24} />
+                Add Equipment to Quote
+              </h2>
+              <button
+                onClick={() => setShowAddNewSection(!showAddNewSection)}
+                className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                {showAddNewSection ? 'Cancel' : 'Add Equipment'}
+              </button>
+            </div>
           
           {showAddNewSection && (
             <div className="space-y-6">
@@ -811,7 +890,8 @@ const QuoteRequestDetailPage: React.FC = () => {
               )}
             </div>
           )}
-        </div>
+          </div>
+        )}
 
         {/* Requested Equipment */}
         <div className="mt-8 bg-white rounded-lg shadow-sm border p-6">
@@ -821,7 +901,7 @@ const QuoteRequestDetailPage: React.FC = () => {
           </h2>
           
           {/* Item Changes Control Bar */}
-          {hasUnsavedItemChanges && (
+          {hasUnsavedItemChanges && !isDeleted && (
             <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
@@ -900,7 +980,7 @@ const QuoteRequestDetailPage: React.FC = () => {
                                 <div className="flex items-center gap-1 bg-gray-50 rounded-lg p-1">
                                   <button
                                     onClick={() => handleQuantityChangeById(item.equipment.id, item.quantity - 1)}
-                                    disabled={item.quantity <= 1 || isSavingItems}
+                                    disabled={item.quantity <= 1 || isSavingItems || isDeleted}
                                     className="w-6 h-6 bg-red-500 hover:bg-red-600 disabled:bg-gray-300 text-white rounded flex items-center justify-center transition-colors text-xs"
                                   >
                                     <Minus className="w-3 h-3" />
@@ -1019,7 +1099,7 @@ const QuoteRequestDetailPage: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <button
                     onClick={handleResendQuote}
-                    disabled={isResending || isSavingDiscount || isGeneratingPdf}
+                    disabled={isResending || isSavingDiscount || isGeneratingPdf || isDeleted}
                     className="w-full inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
                   >
                     {isResending ? (
@@ -1036,7 +1116,7 @@ const QuoteRequestDetailPage: React.FC = () => {
                   </button>
                   <button
                     onClick={handleGeneratePdf}
-                    disabled={isGeneratingPdf || isResending || isSavingDiscount}
+                    disabled={isGeneratingPdf || isResending || isSavingDiscount || isDeleted}
                     className="w-full inline-flex items-center justify-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:bg-gray-400"
                   >
                     {isGeneratingPdf ? (
@@ -1099,6 +1179,60 @@ const QuoteRequestDetailPage: React.FC = () => {
             <p className="text-gray-500 text-center py-8">No equipment items found in this request.</p>
           )}
         </div>
+
+        {/* Audit Log Section */}
+        {auditLogs.length > 0 && (
+          <div className="mt-8 bg-white rounded-lg shadow-sm border p-6">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-gray-900 flex items-center">
+                <History className="mr-3 text-gray-600" size={24} />
+                Activity History ({auditLogs.length})
+              </h2>
+              <button
+                onClick={() => setShowAuditLogs(!showAuditLogs)}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                {showAuditLogs ? 'Hide' : 'Show'} History
+              </button>
+            </div>
+
+            {showAuditLogs && (
+              <div className="space-y-4">
+                {auditLogs.map((log) => (
+                  <div key={log.id} className="border-l-4 border-gray-300 pl-4 py-2">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full ${
+                            log.action_type === 'deleted' ? 'bg-red-100 text-red-800' :
+                            log.action_type === 'restored' ? 'bg-green-100 text-green-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {log.action_type.toUpperCase()}
+                          </span>
+                          <span className="text-sm text-gray-500">
+                            {new Date(log.performed_at).toLocaleString()}
+                          </span>
+                        </div>
+                        {log.details?.deletion_reason && (
+                          <p className="text-sm text-gray-700 mt-2">
+                            Reason: {log.details.deletion_reason}
+                          </p>
+                        )}
+                        {log.customer_snapshot && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            Customer: {log.customer_snapshot.customer_name} ({log.customer_snapshot.customer_email})
+                            {log.customer_snapshot.job_name && ` - Job: ${log.customer_snapshot.job_name}`}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

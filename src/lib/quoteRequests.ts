@@ -20,6 +20,21 @@ export interface QuoteRequest {
   updated_at?: string;
   is_tax_exempt?: boolean;
   discount_amount?: number;
+  deleted_at?: string | null;
+  deleted_by?: string | null;
+  deletion_reason?: string | null;
+  is_deleted?: boolean;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  quote_request_id: string;
+  action_type: 'deleted' | 'restored' | 'permanently_deleted';
+  performed_by: string | null;
+  performed_at: string;
+  details: any;
+  customer_snapshot: any;
+  created_at: string;
 }
 
 // Create a new quote request
@@ -58,16 +73,33 @@ export const createQuoteRequest = async (quoteData: Omit<QuoteRequest, 'id' | 's
   return data as QuoteRequest;
 };
 
-// Fetch all quote requests (admin only)
+// Fetch all active quote requests (admin only)
 export const fetchAllQuoteRequests = async (): Promise<QuoteRequest[]> => {
   const { data, error } = await supabase
     .from('quote_requests')
     .select('*')
+    .eq('is_deleted', false)
     .order('created_at', { ascending: false });
 
   if (error) {
     console.error('Error fetching quote requests:', error);
     throw new Error('Failed to fetch quote requests');
+  }
+
+  return data as QuoteRequest[];
+};
+
+// Fetch deleted quote requests (admin only)
+export const fetchDeletedQuoteRequests = async (): Promise<QuoteRequest[]> => {
+  const { data, error } = await supabase
+    .from('quote_requests')
+    .select('*')
+    .eq('is_deleted', true)
+    .order('deleted_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching deleted quote requests:', error);
+    throw new Error('Failed to fetch deleted quote requests');
   }
 
   return data as QuoteRequest[];
@@ -178,17 +210,185 @@ export const updateQuoteRequestStatus = async (id: string, status: QuoteRequest[
   return data as QuoteRequest;
 };
 
-// Delete quote request
-export const deleteQuoteRequest = async (id: string): Promise<void> => {
-  const { error } = await supabase
+// Soft delete quote request
+export const deleteQuoteRequest = async (
+  id: string,
+  userId: string,
+  reason?: string
+): Promise<void> => {
+  const { data: quoteRequest, error: fetchError } = await supabase
+    .from('quote_requests')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (fetchError) {
+    console.error('Error fetching quote request for deletion:', fetchError);
+    throw new Error('Failed to fetch quote request');
+  }
+
+  const now = new Date().toISOString();
+
+  const { error: updateError } = await supabase
+    .from('quote_requests')
+    .update({
+      deleted_at: now,
+      deleted_by: userId,
+      deletion_reason: reason || null,
+      is_deleted: true,
+      updated_at: now
+    })
+    .eq('id', id);
+
+  if (updateError) {
+    console.error('Error soft deleting quote request:', updateError);
+    throw new Error('Failed to delete quote request');
+  }
+
+  const { error: auditError } = await supabase
+    .from('quote_request_audit_log')
+    .insert({
+      quote_request_id: id,
+      action_type: 'deleted',
+      performed_by: userId,
+      performed_at: now,
+      details: { deletion_reason: reason || null },
+      customer_snapshot: {
+        customer_name: quoteRequest.customer_name,
+        customer_email: quoteRequest.customer_email,
+        job_name: quoteRequest.job_name,
+        company: quoteRequest.company
+      }
+    });
+
+  if (auditError) {
+    console.error('Error creating audit log entry:', auditError);
+  }
+};
+
+// Restore soft-deleted quote request
+export const restoreQuoteRequest = async (
+  id: string,
+  userId: string
+): Promise<void> => {
+  const { data: quoteRequest, error: fetchError } = await supabase
+    .from('quote_requests')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (fetchError) {
+    console.error('Error fetching quote request for restoration:', fetchError);
+    throw new Error('Failed to fetch quote request');
+  }
+
+  const now = new Date().toISOString();
+
+  const { error: updateError } = await supabase
+    .from('quote_requests')
+    .update({
+      deleted_at: null,
+      deleted_by: null,
+      deletion_reason: null,
+      is_deleted: false,
+      updated_at: now
+    })
+    .eq('id', id);
+
+  if (updateError) {
+    console.error('Error restoring quote request:', updateError);
+    throw new Error('Failed to restore quote request');
+  }
+
+  const { error: auditError } = await supabase
+    .from('quote_request_audit_log')
+    .insert({
+      quote_request_id: id,
+      action_type: 'restored',
+      performed_by: userId,
+      performed_at: now,
+      details: {},
+      customer_snapshot: {
+        customer_name: quoteRequest.customer_name,
+        customer_email: quoteRequest.customer_email,
+        job_name: quoteRequest.job_name,
+        company: quoteRequest.company
+      }
+    });
+
+  if (auditError) {
+    console.error('Error creating audit log entry:', auditError);
+  }
+};
+
+// Permanently delete quote request (hard delete)
+export const permanentlyDeleteQuoteRequest = async (
+  id: string,
+  userId: string
+): Promise<void> => {
+  const { data: quoteRequest, error: fetchError } = await supabase
+    .from('quote_requests')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (fetchError) {
+    console.error('Error fetching quote request for permanent deletion:', fetchError);
+    throw new Error('Failed to fetch quote request');
+  }
+
+  const now = new Date().toISOString();
+
+  const { error: auditError } = await supabase
+    .from('quote_request_audit_log')
+    .insert({
+      quote_request_id: id,
+      action_type: 'permanently_deleted',
+      performed_by: userId,
+      performed_at: now,
+      details: {},
+      customer_snapshot: {
+        customer_name: quoteRequest.customer_name,
+        customer_email: quoteRequest.customer_email,
+        job_name: quoteRequest.job_name,
+        company: quoteRequest.company
+      }
+    });
+
+  if (auditError) {
+    console.error('Error creating audit log entry:', auditError);
+  }
+
+  const { error: deleteError } = await supabase
     .from('quote_requests')
     .delete()
     .eq('id', id);
 
-  if (error) {
-    console.error('Error deleting quote request:', error);
-    throw new Error('Failed to delete quote request');
+  if (deleteError) {
+    console.error('Error permanently deleting quote request:', deleteError);
+    throw new Error('Failed to permanently delete quote request');
   }
+};
+
+// Fetch audit logs for a specific quote or all quotes
+export const fetchAuditLogs = async (quoteRequestId?: string): Promise<AuditLogEntry[]> => {
+  let query = supabase
+    .from('quote_request_audit_log')
+    .select('*')
+    .order('performed_at', { ascending: false });
+
+  if (quoteRequestId) {
+    query = query.eq('quote_request_id', quoteRequestId);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('Error fetching audit logs:', error);
+    throw new Error('Failed to fetch audit logs');
+  }
+
+  return data as AuditLogEntry[];
 };
 
 // Fetch pending quote requests count for admin dashboard
@@ -197,7 +397,8 @@ export const fetchPendingQuoteRequestsCount = async (): Promise<number> => {
   const { count, error } = await supabase
     .from('quote_requests')
     .select('*', { count: 'exact', head: true })
-    .eq('status', 'pending');
+    .eq('status', 'pending')
+    .eq('is_deleted', false);
 
   if (error) {
     console.error('fetchPendingQuoteRequestsCount: Supabase error:', error);
@@ -213,7 +414,8 @@ export const fetchTotalQuoteRequestsCount = async (): Promise<number> => {
   console.log('fetchTotalQuoteRequestsCount: Calling Supabase to count all quote requests...');
   const { count, error } = await supabase
     .from('quote_requests')
-    .select('*', { count: 'exact', head: true });
+    .select('*', { count: 'exact', head: true })
+    .eq('is_deleted', false);
 
   if (error) {
     console.error('fetchTotalQuoteRequestsCount: Supabase error:', error);
@@ -230,6 +432,7 @@ export const fetchQuoteRequestsByStatus = async (status: QuoteRequest['status'])
     .from('quote_requests')
     .select('*')
     .eq('status', status)
+    .eq('is_deleted', false)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -246,6 +449,7 @@ export const fetchRecentQuoteRequests = async (limit = 5): Promise<any[]> => {
   const { data, error } = await supabase
     .from('quote_requests')
     .select('id, customer_name, job_name, created_at, updated_at')
+    .eq('is_deleted', false)
     .order('created_at', { ascending: false })
     .limit(limit);
 
