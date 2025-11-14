@@ -40,10 +40,13 @@ export interface AuditLogEntry {
 // Create a new quote request
 export const createQuoteRequest = async (quoteData: Omit<QuoteRequest, 'id' | 'status' | 'created_at' | 'updated_at'>): Promise<QuoteRequest> => {
   console.log('Creating quote request with data:', quoteData);
-  
+
+  const session = await supabase.auth.getSession();
+  console.log('Current session when creating quote:', session);
+
   const { data, error } = await supabase
     .from('quote_requests')
-    .insert([{
+    .insert({
       customer_name: quoteData.customer_name,
       customer_email: quoteData.customer_email,
       customer_phone: quoteData.customer_phone,
@@ -59,7 +62,7 @@ export const createQuoteRequest = async (quoteData: Omit<QuoteRequest, 'id' | 's
       status: 'pending',
       is_tax_exempt: quoteData.is_tax_exempt || false,
       is_deleted: false
-    }])
+    })
     .select()
     .single();
 
