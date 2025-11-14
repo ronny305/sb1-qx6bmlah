@@ -42,7 +42,12 @@ export const createQuoteRequest = async (quoteData: Omit<QuoteRequest, 'id' | 's
   console.log('Creating quote request with data:', quoteData);
 
   const session = await supabase.auth.getSession();
-  console.log('Current session when creating quote:', session);
+  console.log('Current session when creating quote:', {
+    hasSession: !!session?.data?.session,
+    userId: session?.data?.session?.user?.id,
+    userEmail: session?.data?.session?.user?.email,
+    role: session?.data?.session?.user?.role
+  });
 
   const { data, error } = await supabase
     .from('quote_requests')
@@ -66,10 +71,13 @@ export const createQuoteRequest = async (quoteData: Omit<QuoteRequest, 'id' | 's
     .select()
     .single();
 
-  console.log('Supabase response:', { data, error });
-
   if (error) {
-    console.error('Error creating quote request:', error);
+    console.error('Error creating quote request:', {
+      message: error.message,
+      code: error.code,
+      details: error.details,
+      hint: error.hint
+    });
     throw new Error(`Failed to create quote request: ${error.message}`);
   }
 
