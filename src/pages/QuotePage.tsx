@@ -44,7 +44,8 @@ const QuotePage: React.FC = () => {
         end_date: orderInfo.primaryReturnDate,
         shooting_locations: orderInfo.shootingLocations,
         special_requests: specialRequests,
-        items: cartState.items
+        items: cartState.items,
+        is_tax_exempt: isTaxExempt
       };
 
       console.log('Submitting quote request:', quoteData);
