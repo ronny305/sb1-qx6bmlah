@@ -71,7 +71,7 @@ const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-cover bg-center bg-no-repeat text-white py-16 h-screen" style={{backgroundImage: "url('/onestop-truck-v2.png')"}}>
+      <section className="relative bg-cover bg-center bg-no-repeat text-white py-16 h-screen" style={{backgroundImage: "url('https://onestop-rentals.s3.us-east-2.amazonaws.com/onestop-truck-v2.png')"}}>
         {/* Dark overlay for text readability */}
         <div className="absolute inset-0 bg-black bg-opacity-60"></div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center">
